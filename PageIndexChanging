@@ -1,0 +1,45 @@
+<asp:GridView ID="grdTransfer" runat="server" Width="100%"
+                                                                    AutoGenerateColumns="false" PagerStyle-CssClass="paging noPrint" AllowPaging="true" OnPageIndexChanging="grdTransfer_PageIndexChanging"
+                                                                    PageSize="25" EmptyDataText="No Record(s) Found" CellPadding="2"
+                                                                    CssClass="table table-striped table-bordered white-bg table-hover" OnRowDataBound="grdTransfer_RowDataBound">
+                                                                    <Columns>
+                                                                        <asp:TemplateField HeaderText="Sl.#" HeaderStyle-Width="2%">
+                                                                            <ItemTemplate>
+                                                                                <asp:Label ID="lblsl" runat="server" Text='<%#(grdTransfer.PageIndex * grdTransfer.PageSize) + (grdTransfer.Rows.Count + 1)%>'></asp:Label>
+                                                                            </ItemTemplate>
+                                                                            <HeaderStyle Width="2%" />
+                                                                        </asp:TemplateField>
+                                                                        <asp:BoundField DataField="Barcode" HeaderText="Barcode No." />
+                                                                        <asp:BoundField DataField="vch_ApplicantName" HeaderText="Applicant Name" />
+                                                                        <asp:BoundField DataField="RegisteredMobileNo" HeaderText="RegisteredMoblie Number" />
+                                                                        <asp:BoundField DataField="AlternateNo" HeaderText="Alternate Number" />
+                                                                        <asp:BoundField HeaderText="Email" DataField="Email" />
+                                                                        <asp:BoundField HeaderText="Bank Name " DataField="BankRefNo" />
+                                                                        <asp:BoundField HeaderText="Branch Name " DataField="vch_BranchName" />
+                                                                        <asp:BoundField HeaderText="IFSC Code " DataField="vch_IFSCCode" />
+                                                                        <asp:BoundField HeaderText="Account Number" DataField="vch_AccountNumber" />
+
+                                                                    </Columns>
+                                                                    <EmptyDataRowStyle CssClass="noData" />
+                                                                    <PagerStyle HorizontalAlign="Right" CssClass="paging NOPRINT" />
+                                                                    <PagerSettings Mode="NumericFirstLast" NextPageText="Next" FirstPageText="First"
+                                                                        LastPageText="Last" PreviousPageText="Prev" />
+                                                                </asp:GridView>
+                                                                
+                                                                
+                                                                
+                                                                
+   --------------------------------------------------------------------------------------------------------------------------------------------------------------
+   
+    protected void grdTransfer_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        try
+        {
+            grdTransfer.PageIndex = e.NewPageIndex;
+            FillGrid();
+        }
+        catch (Exception ex)
+        {
+            ScriptManager.RegisterStartupScript(Page, this.GetType(), "Myalert", "jAlert('', '<strong>" + ex.Message.ToString().Replace("'", "") + "</strong>', Title);", true);
+        }
+    }
