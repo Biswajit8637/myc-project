@@ -43,3 +43,18 @@
             ScriptManager.RegisterStartupScript(Page, this.GetType(), "Myalert", "jAlert('', '<strong>" + ex.Message.ToString().Replace("'", "") + "</strong>', Title);", true);
         }
     }
+    
+    ---------------------------------------------------------------------------------------------
+    when export not import in exel
+    <Triggers>
+                                                        <asp:PostBackTrigger ControlID="lnkExport" />
+                                                    </Triggers>
+    
+    
+    
+    
+    
+    
+    
+    
+    
