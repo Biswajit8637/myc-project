@@ -1,0 +1,284 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using SAMSHEBEDService;
+using System.ServiceModel;
+
+public partial class Admission_AdmissionUpdatePending : System.Web.UI.Page
+{
+    #region Member Variable
+    int intcounter;
+    ApplicantDetails objApplicant = null;
+    AdmissionData objAdmissionData = null;
+    List<AdmissionData> listAdmissionData = null;
+    public int isSaved;
+    #endregion
+
+
+    #region OnInit
+    protected override void OnInit(EventArgs e)
+    {
+        base.OnInit(e);
+        ViewStateUserKey = Session.SessionID;
+    }
+    #endregion
+
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!Page.IsPostBack)
+        {
+            fillPhase();
+        }
+    }
+
+    protected void grdStrength_PageIndexChanging(object sender, System.Web.UI.WebControls.GridViewPageEventArgs e)
+    {
+        grdStrength.PageIndex = e.NewPageIndex;
+        BindAdmissionData();
+    }
+    private void DisplayPaging(int gIntRowsCount, GridView grdViewRegStatus, Label lblPaging, LinkButton lbtnAll)
+    {
+        if (grdViewRegStatus.Rows.Count > 0)
+        {
+
+            if (gIntRowsCount > grdViewRegStatus.PageSize)
+            {
+                lblPaging.Visible = true;
+                lbtnAll.Visible = true;
+            }
+            else
+            {
+                lblPaging.Visible = true;
+                lbtnAll.Visible = false;
+            }
+            if (grdViewRegStatus.PageIndex + 1 == grdViewRegStatus.PageCount)
+            {
+                lblPaging.Text = "Results <b>" + (Convert.ToInt32((grdViewRegStatus.PageIndex * grdViewRegStatus.PageSize)) + 1) + "</b> - <b>" + gIntRowsCount + " " + "Of" + " " + gIntRowsCount + "</b>";
+            }
+            else
+            {
+                lblPaging.Text = "Results <b>" + (Convert.ToInt32((grdViewRegStatus.PageIndex * grdViewRegStatus.PageSize)) + 1) + "</b> - <b>" + ((grdViewRegStatus.PageIndex + 1) * grdViewRegStatus.PageSize) + " " + "Of" + " " + gIntRowsCount + "</b>";
+            }
+        }
+        else
+        {
+            lblPaging.Visible = false;
+            lbtnAll.Visible = false;
+        }
+    }
+
+
+    protected void BindAdmissionData()
+    {
+        List<ApplicantDetails> listApplicantDetails = null;
+        ApplicantDetails objApplicantDetails = null;
+        try
+        {
+            listAdmissionData = new List<AdmissionData>();
+            using (SAMSBEDBusinessClient proxy = new SAMSBEDBusinessClient())
+            {
+                objApplicantDetails = new ApplicantDetails();
+
+                objApplicantDetails.Action = "UP";
+                objApplicantDetails.int_StreamID = Convert.ToInt32(ddlStream.SelectedValue.ToString());
+                //objApplicantDetails.intQuotaid = Convert.ToInt32(ddlQuota.SelectedValue.ToString());
+                objApplicantDetails.Phase = Convert.ToInt32(ddlPhase.SelectedValue.ToString());
+
+                listApplicantDetails = proxy.GetPendingAdmissionList(objApplicantDetails);
+                intcounter = listApplicantDetails.Count();
+                if (intcounter > 0)
+                {
+                    grdStrength.DataSource = listApplicantDetails;
+                    grdStrength.DataBind();
+                    DisplayPaging(intcounter, (GridView)grdStrength, lblPage, lbPage);
+
+                    grdStrength.FooterRow.Cells[1].Text = "Total";
+                    grdStrength.FooterRow.Cells[1].HorizontalAlign = HorizontalAlign.Right;
+
+                }
+                else
+                {
+                    grdStrength.DataSource = null;
+                    grdStrength.DataBind();
+                }
+
+            }
+        }
+        catch (FaultException<CustomFault> ex)
+        {
+            ScriptManager.RegisterStartupScript(Page, this.GetType(), "alert", "alert('" + ex.Detail.ErrorMsg + "');", true);
+            throw ex;
+        }
+        catch (FaultException ex)
+        {
+            ScriptManager.RegisterStartupScript(Page, this.GetType(), "alert", "alert('" + ex.Message.ToString() + "');", true);
+            throw ex;
+        }
+        catch (Exception ex)
+        {
+            ScriptManager.RegisterStartupScript(Page, this.GetType(), "alert", "alert('" + ex.Message.ToString() + "');", true);
+            throw ex;
+        }
+        finally
+        {
+            objAdmissionData = null; listAdmissionData = null;
+        }
+    }
+
+    protected void btnShow_Click(object sender, System.EventArgs e)
+    {
+        BindAdmissionData();
+    }
+    protected void lbPage_Click(object sender, System.EventArgs e)
+    {
+        if (lbPage.Text == "All")
+        {
+            lbPage.Text = "Paging";
+            grdStrength.PageIndex = 0;
+            grdStrength.AllowPaging = false;
+            BindAdmissionData();
+        }
+        else
+        {
+            lbPage.Text = "All";
+            grdStrength.AllowPaging = true;
+            BindAdmissionData();
+        }
+    }
+     
+    
+
+    protected void btnExcel_Click(object sender, System.EventArgs e)
+    {
+        try
+        {
+            GridviewExportUtil.Export(grdStrength, "Admission Update Pending");
+        }
+        catch (Exception ex)
+        {
+            ScriptManager.RegisterStartupScript(Page, this.GetType(), "alert", "jAlert('', '" + ex.Message.Replace(":", "").Replace(".", "").ToString() + "'), Title;", true);
+        }
+    }
+    public override void VerifyRenderingInServerForm(Control control)
+    {
+        //Verifies that the control is rendered
+    }
+
+    int SelectedTotal = 0;
+    int AdmittedTotal = 0;
+    int RejectedTotal = 0;
+    int AbsentTotal = 0;
+    int PHTotal = 0;
+    int PendingTotal = 0;
+    int SlideUpTotal = 0;
+    protected void grdStrength_RowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        if (e.Row.RowType == DataControlRowType.DataRow)
+        {
+            Label lblSelected = (Label)e.Row.FindControl("lblSelected");
+            Label lblAdmitted = (Label)e.Row.FindControl("lblAdmitted");
+            Label lblRejected = (Label)e.Row.FindControl("lblRejected");
+            Label lblAbsent = (Label)e.Row.FindControl("lblAbsent");
+            Label lblPH = (Label)e.Row.FindControl("lblPH");
+            Label lblPending = (Label)e.Row.FindControl("lblPending");
+            Label lblSlideUp = (Label)e.Row.FindControl("lblSlideUp");
+
+            int TotalS = Convert.ToInt32(lblSelected.Text);
+            int TotalA = Convert.ToInt32(lblAdmitted.Text);
+            int TotalR = Convert.ToInt32(lblRejected.Text);
+            int TotalAb = Convert.ToInt32(lblAbsent.Text);
+            int TotalPH = Convert.ToInt32(lblPH.Text);
+            int TotalP = Convert.ToInt32(lblPending.Text);
+            int TotalSl = Convert.ToInt32(lblSlideUp.Text);
+
+            SelectedTotal += TotalS;
+            AdmittedTotal += TotalA;
+            RejectedTotal += TotalR;
+            AbsentTotal += TotalAb;
+            PHTotal += TotalPH;
+            PendingTotal += TotalP;
+            SlideUpTotal += TotalSl;
+
+        }
+        if (e.Row.RowType == DataControlRowType.Footer)
+        {
+            Label lblTSelected = (Label)e.Row.FindControl("lblTSelected");
+            lblTSelected.Text = SelectedTotal.ToString();
+
+            Label lblTAdmitted = (Label)e.Row.FindControl("lblTAdmitted");
+            lblTAdmitted.Text = AdmittedTotal.ToString();
+
+            Label lblTRejected = (Label)e.Row.FindControl("lblTRejected");
+            lblTRejected.Text = RejectedTotal.ToString();
+
+            Label lblTAbsent = (Label)e.Row.FindControl("lblTAbsent");
+            lblTAbsent.Text = AbsentTotal.ToString();
+
+            Label lblTPH = (Label)e.Row.FindControl("lblTPH");
+            lblTPH.Text = PHTotal.ToString();
+
+            Label lblTPending = (Label)e.Row.FindControl("lblTPending");
+            lblTPending.Text = PendingTotal.ToString();
+
+            Label lblTSlideUp = (Label)e.Row.FindControl("lblTSlideUp");
+            lblTSlideUp.Text = SlideUpTotal.ToString();
+        }
+    }
+    public void fillPhase()
+    {
+        try
+        {
+            using (SAMSBEDBusinessClient client = new SAMSBEDBusinessClient())
+            {
+                ddlPhase.DataSource = client.GetPhase(new MasterData { Action = "P" });
+                ddlPhase.DataValueField = "Id";
+                ddlPhase.DataTextField = "Name";
+                ddlPhase.DataBind();
+                ddlPhase.Items.Remove(ddlPhase.Items.FindByValue("5"));
+                ddlPhase.Items.Insert(0, new ListItem("-Select-", "0"));
+            }
+        }
+        catch (FaultException<CustomFault> ex)
+        {
+            ScriptManager.RegisterStartupScript(Page, this.GetType(), "alert", "alert('" + ex.Detail.ErrorMsg + "');", true);
+            throw ex;
+        }
+        catch (FaultException ex)
+        {
+            ScriptManager.RegisterStartupScript(Page, this.GetType(), "alert", "alert('" + ex.Message.ToString() + "');", true);
+            throw ex;
+        }
+        catch (Exception ex)
+        {
+            ScriptManager.RegisterStartupScript(Page, this.GetType(), "alert", "alert('" + ex.Message.ToString() + "');", true);
+            throw ex;
+        }
+    }
+
+    //protected void ddlStream_SelectedIndexChanged(object sender, EventArgs e)
+    //{
+    //    ddlQuota.Items.Clear();
+    //    ddlQuota.Items.Add(new ListItem("-Select-", "0"));
+
+    //    if(ddlStream.SelectedValue == "1")
+    //    {
+    //        ddlQuota.Items.Add(new ListItem("State", "1"));
+    //        ddlQuota.Items.Add(new ListItem("BIET", "2"));
+    //        ddlQuota.Items.Add(new ListItem("Telugu", "3"));
+    //        ddlQuota.Items.Add(new ListItem("Urdu", "4"));
+    //        ddlQuota.Items.Add(new ListItem("Olchiki Santali", "5"));
+    //        ddlQuota.Items.Add(new ListItem("Christian Community", "6"));
+    //        ddlQuota.Items.Add(new ListItem("Kandhamal", "7"));
+    //    }
+    //   else if (ddlStream.SelectedValue == "2")
+    //    {
+    //        ddlQuota.Items.Add(new ListItem("State", "1"));
+    //        ddlQuota.Items.Add(new ListItem("Kandhamal", "7"));
+    //    }
+
+    //}
+}
