@@ -1,0 +1,324 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Data.SqlClient;
+using SAMS_BED_Entity;
+using System.Data;
+
+namespace SAMS_BED_DAL
+{
+    public class AdmissionDAL : IAdmissionDAL
+    {
+        string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings[DataBaseHelper.ConnectionString].ConnectionString;
+        string intOutput;
+        object param = new object();
+
+        public List<ApplicantDetails> GetAdmissionList(ApplicantDetails objApplicantDetails)
+        {
+            SqlDataReader reader = null;
+            List<ApplicantDetails> list = new List<ApplicantDetails>();
+            object[] arr = new object[] {   "P_vchCharAction", objApplicantDetails.Action, 
+                                            "P_intCollegeID", objApplicantDetails.InstituteId,
+                                            "P_IntCourseid", objApplicantDetails.int_StreamID ,
+                                        };
+            try
+            {
+                reader = (SqlDataReader)SqlHelper.ExecuteReader(connectionString, "USP_BED_AdmissionUpdate", arr);
+                list = reader.DataReaderMapToList<ApplicantDetails>(MappingDirection.Auto);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+            finally
+            {
+                reader.Close();
+                reader.Dispose();
+            }
+
+            return list;
+        }
+
+        public string UpdateAdmissionDetails(ApplicantDetails objApplicantInfo)
+        {
+            try
+            {
+                object[] objArray = new object[] { 
+                    "P_vchCharAction", objApplicantInfo.Action,                   
+                    "P_intAppId", objApplicantInfo.ApplicantId,
+                    "P_intCollegeID", objApplicantInfo.InstituteId,
+                    "P_Remarks", objApplicantInfo.Remarks,
+                    "P_intStaus",objApplicantInfo.AppStatus,
+                    "P_intCreatedby",objApplicantInfo.CreatedBy,
+                    "P_vchApplicatiNo",objApplicantInfo.UniqueRefNo,
+                    "P_IntSlideUp", objApplicantInfo.intPay,
+                    "P_vchOtherRemark", objApplicantInfo.OtherRemark,
+                    "P_OUTPUT", "out"
+                 };
+                intOutput = SqlHelper.ExecuteNonQuery(connectionString, "USP_BED_AdmissionUpdate", out param, objArray).ToString();
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception(ex.Message.ToString());
+            }
+            return param.ToString();
+        }
+
+        // Common Admission Update
+
+        public List<ApplicantDetails> GetCommonAdmissionList(ApplicantDetails objApplicantDetails)
+        {
+            SqlDataReader reader = null;
+            List<ApplicantDetails> list = new List<ApplicantDetails>();
+            object[] arr = new object[] {   "P_vchCharAction", objApplicantDetails.Action, 
+                                            "P_intCollegeID", objApplicantDetails.InstituteId,
+                                            "P_IntCourseid", objApplicantDetails.int_StreamID ,
+                                            "P_intStaus", objApplicantDetails.AppStatus ,
+                                            "P_intPhase",objApplicantDetails.Phase,
+                                            "P_intQuotaID",objApplicantDetails.intQuotaid
+
+                                        };
+            try
+            {
+                reader = (SqlDataReader)SqlHelper.ExecuteReader(connectionString, "USP_BED_AdmissionUpdate", arr);
+                list = reader.DataReaderMapToList<ApplicantDetails>(MappingDirection.Auto);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+            finally
+            {
+                reader.Close();
+                reader.Dispose();
+            }
+
+            return list;
+        }
+
+        public List<ApplicantDetails> GetPendingAdmissionList(ApplicantDetails objApplicantDetails)
+        {
+            SqlDataReader reader = null;
+            List<ApplicantDetails> list = new List<ApplicantDetails>();
+            object[] arr = new object[] {   "P_vchCharAction", objApplicantDetails.Action,
+                                            "P_IntCourseid", objApplicantDetails.int_StreamID ,
+                                            "P_Phase",objApplicantDetails.Phase,
+                                            "P_intQuotaID",objApplicantDetails.intQuotaid,
+                                        };
+            try
+            {
+                reader = (SqlDataReader)SqlHelper.ExecuteReader(connectionString, "USP_BED_AdmissionUpdate", arr);
+                list = reader.DataReaderMapToList<ApplicantDetails>(MappingDirection.Auto);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+            finally
+            {
+                reader.Close();
+                reader.Dispose();
+            }
+
+            return list;
+        }
+
+        public string UpdateCommonAdmissionDetails(ApplicantDetails objApplicantInfo)
+        {
+            try
+            {
+                object[] objArray = new object[] { 
+                    "P_vchCharAction", objApplicantInfo.Action,                   
+                    "P_vchIds", objApplicantInfo.Ids,
+                    "P_intCollegeID", objApplicantInfo.InstituteId,
+                    "P_Remarks", objApplicantInfo.Remarks,
+                    "P_IntCourseid" ,objApplicantInfo.TradeId ,
+                    "P_OUTPUT", "out"
+                 };
+                intOutput = SqlHelper.ExecuteNonQuery(connectionString, "USP_BED_AdmissionUpdate", out param, objArray).ToString();
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception(ex.Message.ToString());
+            }
+            return param.ToString();
+        }
+
+        public string UpdateAdmissionStatus(ApplicantDetails objApplicantInfo)
+        {
+            try
+            {
+                object[] objArray = new object[] {
+                    "P_vchCharAction", objApplicantInfo.Action,
+                    "P_intAppId", objApplicantInfo.ApplicantId,
+                    "P_intStaus",objApplicantInfo.AppStatus,
+                    "P_intNewStaus",objApplicantInfo.ADMStatus,
+                    "P_intCreatedby",objApplicantInfo.CreatedBy,
+                 };
+                intOutput = SqlHelper.ExecuteNonQuery(connectionString, "USP_BED_AdmissionUpdate", out param, objArray).ToString();
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception(ex.Message.ToString());
+            }
+            return param.ToString();
+        }
+        public List<ApplicantDetails> GetPermissionDtls(ApplicantDetails objApplicantDetails)
+        {
+            SqlDataReader reader = null;
+            List<ApplicantDetails> list = new List<ApplicantDetails>();
+            object[] arr = new object[] {   "P_vchCharAction", objApplicantDetails.Action,
+                                            "@P_intCreatedby", objApplicantDetails.CreatedBy,
+                                        };
+            try
+            {
+                reader = (SqlDataReader)SqlHelper.ExecuteReader(connectionString, "USP_BED_AdmissionUpdate", arr);
+                list = reader.DataReaderMapToList<ApplicantDetails>(MappingDirection.Auto);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+            finally
+            {
+                reader.Close();
+                reader.Dispose();
+            }
+
+            return list;
+        }
+
+
+        //public DataTable GetPermissionDtls(ApplicantDetails objApplicantDetails)
+        //{
+        //    DataTable dt = new DataTable();
+
+        //    object[] arr = new object[] {
+        //                           "P_vchCharAction", objApplicantDetails.Action,
+        //                           "P_intCreatedby", objApplicantDetails.CreatedBy,
+        //                        };
+        //    try
+        //    {
+        //        dt = SqlHelper.getdatatable(connectionString, CommandType.StoredProcedure, "USP_BED_AdmissionUpdate", null,arr);
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message);
+        //    }
+        //    return dt;
+        //}
+
+        //Added By Saswat Das on 20/07/2021
+        public List<ApplicantDetails> GetApplicantDocuments(ApplicantDetails objApplicantDetails)
+        {
+            SqlDataReader reader = null;
+            List<ApplicantDetails> list = new List<ApplicantDetails>();
+            object[] arr = new object[] {   "P_chrAction", objApplicantDetails.Action,
+                                            "P_intApplicantID", objApplicantDetails.int_ApplicantId,
+                                        };
+            try
+            {
+                reader = (SqlDataReader)SqlHelper.ExecuteReader(connectionString, "USP_BED_APPLICANTINFO_VE", arr);
+                list = reader.DataReaderMapToList<ApplicantDetails>(MappingDirection.Auto);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+            finally
+            {
+                reader.Close();
+                reader.Dispose();
+            }
+
+            return list;
+        }
+
+        //added by saswat das on 09-09-2021
+        public int CheckAdmDateline(PageActive admCancel)
+        {
+            int retValue = 0;
+            SqlConnection sqlConnection = new SqlConnection(connectionString);
+            SqlCommand sqlCommand = new SqlCommand();
+
+            try
+            {
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = "USP_BED_ActivationStatus";
+                sqlCommand.CommandType = System.Data.CommandType.StoredProcedure;
+                sqlCommand.Parameters.AddWithValue("@p_PageAliasName", admCancel.AppNo);
+                sqlCommand.Parameters.AddWithValue("@p_VchAction", admCancel.Action);
+                SqlParameter sqlParameter = new SqlParameter() { ParameterName = "p_output", Direction = System.Data.ParameterDirection.Output, DbType = System.Data.DbType.String, Size = 500 };
+                sqlCommand.Parameters.Add(sqlParameter);
+                if (sqlConnection.State == System.Data.ConnectionState.Closed)
+                {
+                    sqlConnection.Open();
+                }
+                sqlCommand.ExecuteNonQuery();
+                object obj = sqlParameter.Value;
+                if (obj != null && obj != DBNull.Value)
+                {
+                    retValue = Convert.ToInt32(obj);
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception(ex.Message.ToString());
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+            return retValue;
+        }
+
+       
+    }
+}
+-------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Data.SqlClient;
+using SAMS_BED_Entity;
+using System.Data;
+
+namespace SAMS_BED_DAL
+{
+    public interface IAdmissionDAL
+    {
+        //List<ApplicantInfo> GetAdmissionDates(ApplicantInfo objApplicantInfo);
+        List<ApplicantDetails> GetAdmissionList(ApplicantDetails objApplicantInfo);
+        //List<ApplicantInfo> GetOptionDetail(ApplicantInfo objApplicantInfo);
+
+        string UpdateAdmissionDetails(ApplicantDetails objApplicantInfo);
+        //string UpdateSpotAdmission(ApplicantInfo objApplicantInfo);
+
+        //List<ApplicantInfo> ViewAnnexure7(ApplicantInfo objApplicantInfo);
+        //string UpdateAnnexure7(ApplicantInfo objApplicantInfo);
+
+        // Common Amission Update
+
+        List<ApplicantDetails> GetCommonAdmissionList(ApplicantDetails objApplicantInfo);
+        List<ApplicantDetails> GetPendingAdmissionList(ApplicantDetails objApplicantInfo);
+        string UpdateCommonAdmissionDetails(ApplicantDetails objApplicantInfo);
+        string UpdateAdmissionStatus(ApplicantDetails objApplicantInfo);
+
+        List<ApplicantDetails> GetPermissionDtls(ApplicantDetails objApplicantInfo);
+        // DataTable GetPermissionDtls(ApplicantDetails objApplicantInfo);
+
+        //Added By Saswat das on 20-07-2021
+        List<ApplicantDetails> GetApplicantDocuments(ApplicantDetails objApplicantInfo);
+
+        int CheckAdmDateline(PageActive admCancel);
+    }
+}
+
